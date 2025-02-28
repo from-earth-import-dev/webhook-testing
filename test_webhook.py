@@ -9,11 +9,28 @@ from app import trigger_alert
 from models import WebhookPayload
 
 
-# Pytest fixture to create a dummy customer webhook endpoint.
-# It runs the Flask server in a background thread on port 5001 and yields
-# the list of received alert payloads.
 @pytest.fixture(scope="module")
 def customer_server():
+    """
+    Creates a test Flask server that simulates a customer's webhook endpoint.
+
+    This fixture runs a Flask server in a background thread on port 5001 that acts as
+    a mock customer endpoint. It's used to validate the webhook flow in app.py where
+    WebhookPayload events trigger outgoing POST requests.
+
+    The server exposes a /client-webhook endpoint that:
+    - Accepts POST requests with JSON payloads
+    - Stores received payloads in memory
+    - Returns a 200 status with {"status": "received"}
+
+    Yields:
+        list: A list of received webhook payloads that can be inspected in tests
+              to verify the correct WebhookPayload data was sent.
+
+    Cleanup:
+        The server is automatically shutdown and the thread joined when the
+        fixture goes out of scope.
+    """
     customer_app = Flask("customer_app")
     received_alerts = []
 
@@ -31,12 +48,10 @@ def customer_server():
     thread.join()
 
 
-# End-to-end test that validates that the Meter's alert triggers an outgoing POST
-# to the customer's webhook endpoint with the expected payload and response time.
 def test_alert_triggers_client_post(customer_server):
     valid_payload_obj = WebhookPayload(
         event_id=789,
-        timestamp="2023-10-05T12:34:56",  # ISO 8601 format
+        timestamp="2023-10-05T12:34:56",
         event_type="alert",
         description="Customer endpoint test",
     )
@@ -52,9 +67,10 @@ def test_alert_triggers_client_post(customer_server):
 
     # Wait briefly to ensure the dummy endpoint processed the request.
     time.sleep(0.1)
-    # Validate that the endpoint received one alert with the expected event_id.
-    assert len(customer_server) == 1
+
+    assert len(customer_server) == 1, "Expected exactly one alert"
     received_data = customer_server[0]
-    assert received_data["event_id"] == valid_payload_obj.event_id
-    # Validate that the response time is within an acceptable threshold.
-    assert response_time < 0.5
+    assert (
+        received_data["event_id"] == valid_payload_obj.event_id
+    ), "Received alert should match the expected payload"
+    assert response_time < 0.5, "Response time should be less than 0.5 seconds"

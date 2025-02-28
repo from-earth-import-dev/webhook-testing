@@ -5,6 +5,6 @@ from pydantic import BaseModel
 
 class WebhookPayload(BaseModel):
     event_id: int
-    timestamp: datetime  # expects an ISO formatted string
+    timestamp: datetime
     event_type: str
     description: str
