@@ -1,10 +1,13 @@
-import time
 import threading
+import time
+
 import pytest
+from flask import Flask, jsonify, request
 from werkzeug.serving import make_server
+
 from app import trigger_alert
 from models import WebhookPayload
-from flask import Flask, request, jsonify
+
 
 # Pytest fixture to create a dummy customer webhook endpoint.
 # It runs the Flask server in a background thread on port 5001 and yields
@@ -27,6 +30,7 @@ def customer_server():
     server.shutdown()
     thread.join()
 
+
 # End-to-end test that validates that the Meter's alert triggers an outgoing POST
 # to the customer's webhook endpoint with the expected payload and response time.
 def test_alert_triggers_client_post(customer_server):
@@ -34,7 +38,7 @@ def test_alert_triggers_client_post(customer_server):
         event_id=789,
         timestamp="2023-10-05T12:34:56",  # ISO 8601 format
         event_type="alert",
-        description="Customer endpoint test"
+        description="Customer endpoint test",
     )
     target_url = "http://127.0.0.1:5001/client-webhook"
     start_time = time.perf_counter()
@@ -53,4 +57,4 @@ def test_alert_triggers_client_post(customer_server):
     received_data = customer_server[0]
     assert received_data["event_id"] == valid_payload_obj.event_id
     # Validate that the response time is within an acceptable threshold.
-    assert response_time < 0.5 
+    assert response_time < 0.5

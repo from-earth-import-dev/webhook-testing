@@ -1,10 +1,12 @@
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify, request
 from pydantic import ValidationError
+
 from models import WebhookPayload
 
 app = Flask(__name__)
 # Global list to simulate triggered events for testing purposes
 triggered_events = []
+
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
@@ -25,12 +27,15 @@ def webhook():
         # For any other errors, return a 500 response.
         return jsonify({"status": "error", "message": str(exc)}), 500
 
+
 # New function to trigger an outgoing alert POST request (Meter sending alert to customer)
 def trigger_alert(payload: WebhookPayload, target_url: str):
     import requests  # Import here to keep dependencies local to this functionality.
+
     # Convert the payload to a dict and send the POST request.
     response = requests.post(target_url, json=payload.dict())
     return response
 
-if __name__ == '__main__':
-    app.run(debug=True) 
+
+if __name__ == "__main__":
+    app.run(debug=True)
