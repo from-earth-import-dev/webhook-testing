@@ -49,7 +49,7 @@ def trigger_alert(payload: WebhookPayload, target_url: str) -> requests.Response
     """
     Trigger an outgoing alert POST request to the customer.
     """
-    response = requests.post(target_url, json=payload.model_dump())
+    response = requests.post(target_url, json=payload.model_dump(mode="json"))
     return response
 
 

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_serializer
 
 
 class WebhookPayload(BaseModel):
@@ -9,5 +9,6 @@ class WebhookPayload(BaseModel):
     event_type: str
     description: str
 
-    class Config:
-        json_encoders = {datetime: lambda dt: dt.isoformat()}
+    @field_serializer("timestamp", mode="plain")
+    def serialize_timestamp(self, value: datetime) -> str:
+        return value.isoformat()
