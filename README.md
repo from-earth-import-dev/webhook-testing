@@ -110,11 +110,3 @@ To set up pre-commit hooks:
 ```bash
 pre-commit install
 ```
-
-## Use Cases
-
-- Event notification systems
-- Monitoring and alerting pipelines
-- Integration between microservices
-- Webhook relay/proxy services
-- Testing webhook integrations
