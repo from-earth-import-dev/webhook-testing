@@ -10,5 +10,5 @@ class WebhookPayload(BaseModel):
     description: str
 
     @field_serializer("timestamp", mode="plain")
-    def serialize_timestamp(self, value: datetime) -> str:
+    def serialize_timestamp(self: "WebhookPayload", value: datetime) -> str:
         return value.isoformat()

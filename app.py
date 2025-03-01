@@ -1,5 +1,5 @@
 import requests
-from flask import Flask, jsonify, request
+from flask import Flask, Response, jsonify, request
 from pydantic import ValidationError
 
 from models import WebhookPayload
@@ -9,7 +9,7 @@ triggered_events = []
 
 
 @app.route("/webhook", methods=["POST"])
-def webhook():
+def webhook() -> Response:
     """
     Webhook endpoint that receives and validates event payloads.
 
