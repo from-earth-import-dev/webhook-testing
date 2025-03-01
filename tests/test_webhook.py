@@ -1,18 +1,19 @@
 import threading
 import time
 from datetime import datetime
-from typing import Generator
+from typing import Any, Dict, Generator, List
 
 import pytest
 from flask import Flask, Response, jsonify, request
+from requests import Response as RequestsResponse
 from werkzeug.serving import make_server
 
-from app import trigger_alert
-from models import WebhookPayload
+from webhook_service.models import WebhookPayload
+from webhook_service.routes import trigger_alert
 
 
 @pytest.fixture(scope="module")
-def customer_server() -> Generator[list[dict], None, None]:
+def customer_server() -> Generator[List[Dict[str, Any]], None, None]:
     """
     Creates a test Flask server that simulates a customer's webhook endpoint.
 
@@ -33,24 +34,24 @@ def customer_server() -> Generator[list[dict], None, None]:
         The server is automatically shutdown and the thread joined when the
         fixture goes out of scope.
     """
-    customer_app = Flask("customer_app")
-    received_alerts: list[dict] = []
+    customer_app: Flask = Flask("customer_app")
+    received_alerts: List[Dict[str, Any]] = []
 
     @customer_app.route("/client-webhook", methods=["POST"])
     def client_webhook() -> Response:
-        data = request.get_json()
+        data: Dict[str, Any] = request.get_json()
         received_alerts.append(data)
         return jsonify({"status": "received"}), 200
 
     server = make_server("127.0.0.1", 5001, customer_app)
-    thread = threading.Thread(target=server.serve_forever)
+    thread: threading.Thread = threading.Thread(target=server.serve_forever)
     thread.start()
     yield received_alerts
     server.shutdown()
     thread.join()
 
 
-def test_alert_triggers_client_post(customer_server: list[dict]) -> None:
+def test_alert_triggers_client_post(customer_server: List[Dict[str, Any]]) -> None:
     """
     This test validates that triggering an alert sends a valid POST request
     to a simulated client's webhook endpoint. It ensures that the event data
@@ -64,22 +65,22 @@ def test_alert_triggers_client_post(customer_server: list[dict]) -> None:
     4. Check that the received alert payload's event_id matches the expected value.
     5. Validate that the response time is less than 0.5 seconds.
     """
-    valid_payload_obj = WebhookPayload(
+    valid_payload_obj: WebhookPayload = WebhookPayload(
         event_id=789,
         timestamp=datetime.now(),
         event_type="alert",
         description="Customer endpoint test",
     )
-    target_url = "http://127.0.0.1:5001/client-webhook"
-    start_time = time.perf_counter()
-    response = trigger_alert(valid_payload_obj, target_url)
-    response_time = time.perf_counter() - start_time
+    target_url: str = "http://127.0.0.1:5001/client-webhook"
+    start_time: float = time.perf_counter()
+    response: RequestsResponse = trigger_alert(valid_payload_obj, target_url)
+    response_time: float = time.perf_counter() - start_time
 
     # (1) Verify that the HTTP response status code is 200.
     assert response.status_code == 200
 
     # (2) Confirm that the response JSON contains a "status" key with the correct value.
-    data = response.json()
+    data: Dict[str, Any] = response.json()
     assert data["status"] == "received"
 
     # (3) Ensure that the dummy customer server receives exactly one alert.
@@ -88,7 +89,7 @@ def test_alert_triggers_client_post(customer_server: list[dict]) -> None:
     assert len(customer_server) == 1, "Expected exactly one alert"
 
     # (4) Check that the received alert payload's event_id matches the expected value.
-    received_data = customer_server[0]
+    received_data: Dict[str, Any] = customer_server[0]
     assert (
         received_data["event_id"] == valid_payload_obj.event_id
     ), "Received alert should match the expected payload"

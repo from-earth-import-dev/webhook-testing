@@ -9,6 +9,24 @@ This project implements a simple webhook event processing system with two main c
 
 The system validates incoming webhook payloads against a Pydantic model, stores valid events in memory, and provides functionality to forward events to client endpoints. This is particularly useful for event-driven architectures, notification systems, or any application that needs to process and relay webhook events.
 
+## Project Structure
+
+The project follows best practices for Python package organization:
+
+```
+webhook_testing/
+├── webhook_service/       # Main package
+│   ├── app.py             # Flask application setup
+│   ├── models.py          # Data models
+│   └── routes.py          # API endpoints
+├── tests/                 # Test directory
+│   ├── test_app.py        # App & endpoint tests
+│   └── test_webhook.py    # Webhook integration tests
+├── app.py                 # Application entry point
+├── requirements.txt       # Dependencies
+└── README.md              # Documentation
+```
+
 ## Setup
 
 ### Prerequisites
@@ -35,13 +53,16 @@ The system validates incoming webhook payloads against a Pydantic model, stores 
    pip install -r requirements.txt
    ```
 
-## Project Structure
+## Code Quality
 
-- `app.py`: Main Flask application with webhook endpoint and alert trigger functionality
-- `models.py`: Pydantic models for data validation
-- `test_webhook.py`: Tests for the webhook functionality
-- `.flake8`: Flake8 configuration for code linting
-- `.pre-commit-config.yaml`: Pre-commit hooks configuration for code quality
+This project maintains high code quality through:
+
+- **Type Hints**: Comprehensive type annotations using Python's typing module
+- **Black**: Code formatting
+- **isort**: Import sorting
+- **Flake8**: Code linting
+- **MyPy**: Static type checking for verifying type hints
+- **Pre-commit hooks**: Automated checks before committing
 
 ## Running the Application
 
@@ -72,12 +93,13 @@ The webhook endpoint expects JSON payloads with the following structure:
 The system can forward events to client endpoints using the `trigger_alert` function:
 
 ```python
-from app import trigger_alert
-from models import WebhookPayload
+from webhook_service.routes import trigger_alert
+from webhook_service.models import WebhookPayload
+from datetime import datetime
 
 payload = WebhookPayload(
     event_id=123,
-    timestamp="2023-10-05T12:34:56",
+    timestamp=datetime.now(),
     event_type="alert",
     description="Important notification"
 )
@@ -99,14 +121,6 @@ In addition, this project is integrated with GitHub Actions. The CI workflow def
 To view the workflow runs and logs, visit the [GitHub Actions](https://github.com/<your_org>/<your_repo>/actions) tab in your repository.
 
 ## Development
-
-This project uses several tools to maintain code quality:
-
-- **Black**: Code formatting
-- **isort**: Import sorting
-- **Flake8**: Code linting
-- **MyPy**: Static type checking
-- **Pre-commit hooks**: Automated checks before committing
 
 To set up pre-commit hooks:
 
