@@ -87,13 +87,16 @@ response = trigger_alert(payload, "https://client-endpoint.example.com/webhook")
 
 ## Testing
 
-Run the tests using pytest:
+Run the tests locally using pytest:
 
 ```bash
 pytest
 ```
 
-The test suite includes a mock customer server that validates the full webhook flow, ensuring that events are properly received, validated, and forwarded.
+In addition, this project is integrated with GitHub Actions. The CI workflow defined in
+`.github/workflows/python-tests.yml` automatically runs the tests on every push, pull request (to the main branch), and can also be triggered manually via the `workflow_dispatch` event.
+
+To view the workflow runs and logs, visit the [GitHub Actions](https://github.com/<your_org>/<your_repo>/actions) tab in your repository.
 
 ## Development
 
