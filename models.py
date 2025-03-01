@@ -8,3 +8,8 @@ class WebhookPayload(BaseModel):
     timestamp: datetime
     event_type: str
     description: str
+
+    class Config:
+        json_encoders = {
+            datetime: lambda dt: dt.isoformat()
+        }
