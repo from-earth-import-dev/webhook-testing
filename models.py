@@ -10,6 +10,4 @@ class WebhookPayload(BaseModel):
     description: str
 
     class Config:
-        json_encoders = {
-            datetime: lambda dt: dt.isoformat()
-        }
+        json_encoders = {datetime: lambda dt: dt.isoformat()}
